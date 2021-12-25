@@ -17,18 +17,6 @@ const _abi = [
         type: "uint256",
       },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "tokenContract",
-        type: "address",
-      },
-      {
         indexed: false,
         internalType: "address",
         name: "sender",
@@ -37,7 +25,7 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "value",
+        name: "amount",
         type: "uint256",
       },
       {
@@ -105,7 +93,7 @@ const _abi = [
       {
         indexed: false,
         internalType: "address",
-        name: "tokenOwner",
+        name: "seller",
         type: "address",
       },
       {
@@ -126,18 +114,6 @@ const _abi = [
         internalType: "uint256",
         name: "auctionId",
         type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "tokenContract",
-        type: "address",
       },
       {
         indexed: false,

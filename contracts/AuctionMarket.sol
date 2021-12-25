@@ -176,17 +176,13 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
     /**
      * @notice Cancel an auction.
      * @dev Transfers the NFT back to the auction creator and emits an AuctionCanceled event
-     * Only if Auction exists, not started and has no bidder.
+     * Only if Auction exists, has no bidder.
      */
     function cancelAuction(uint256 _id) external override _auctionExists(_id) {
         Auction storage auction = auctions[_id];
         require(
             auction.seller == msg.sender,
             "Can only be called by auction creator"
-        );
-        require(
-            auction.startTime > block.timestamp,
-            "Auction has already started"
         );
         require(auction.bid == 0, "Auction has a bidder");
         _cancelAuction(_id);
