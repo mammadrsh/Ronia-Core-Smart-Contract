@@ -9,6 +9,19 @@ import type { BaseMarket, BaseMarketInterface } from "../BaseMarket";
 const _abi = [
   {
     inputs: [],
+    name: "getPlatformAccount",
+    outputs: [
+      {
+        internalType: "address payable",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "modulo",
     outputs: [
       {
@@ -25,7 +38,7 @@ const _abi = [
     name: "platformAccount",
     outputs: [
       {
-        internalType: "address",
+        internalType: "address payable",
         name: "",
         type: "address",
       },

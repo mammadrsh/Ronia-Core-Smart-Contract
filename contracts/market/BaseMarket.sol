@@ -20,11 +20,15 @@ abstract contract BaseMarket is ReentrancyGuard {
     address public roniaAddress;
     address public wethAddress;
     // @notice platform funds collector
-    address public platformAccount;
+    address payable public platformAccount;
     
     constructor(address _weth, address payable _platformAccount) {
         wethAddress = _weth;
         platformAccount = _platformAccount;
+    }
+
+    function getPlatformAccount() public view returns (address payable) {
+        return platformAccount;
     }
 
     function _fundPay(

@@ -57,14 +57,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
-      name: "AuctionMarket",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AuctionMarket__factory>;
-    getContractFactory(
-      name: "BaseMarket",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BaseMarket__factory>;
-    getContractFactory(
       name: "Ronia721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ronia721__factory>;
@@ -72,6 +64,14 @@ declare module "hardhat/types/runtime" {
       name: "ERC721LazyMintWith712SignatureChecker",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721LazyMintWith712SignatureChecker__factory>;
+    getContractFactory(
+      name: "AuctionMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AuctionMarket__factory>;
+    getContractFactory(
+      name: "BaseMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BaseMarket__factory>;
     getContractFactory(
       name: "IAuctionMarket",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -96,6 +96,10 @@ declare module "hardhat/types/runtime" {
       name: "RoniaMarket",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.RoniaMarket__factory>;
+    getContractFactory(
+      name: "WETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WETH__factory>;
 
     getContractAt(
       name: "AccessControl",
@@ -153,16 +157,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
-      name: "AuctionMarket",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.AuctionMarket>;
-    getContractAt(
-      name: "BaseMarket",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.BaseMarket>;
-    getContractAt(
       name: "Ronia721",
       address: string,
       signer?: ethers.Signer
@@ -172,6 +166,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721LazyMintWith712SignatureChecker>;
+    getContractAt(
+      name: "AuctionMarket",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AuctionMarket>;
+    getContractAt(
+      name: "BaseMarket",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BaseMarket>;
     getContractAt(
       name: "IAuctionMarket",
       address: string,
@@ -202,6 +206,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.RoniaMarket>;
+    getContractAt(
+      name: "WETH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WETH>;
 
     // default types
     getContractFactory(

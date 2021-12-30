@@ -25,6 +25,7 @@ export interface AuctionMarketInterface extends utils.Interface {
     "createAuction(uint256,address,uint256,uint256,uint256,address)": FunctionFragment;
     "endAuction(uint256)": FunctionFragment;
     "extentionWindow()": FunctionFragment;
+    "getPlatformAccount()": FunctionFragment;
     "modulo()": FunctionFragment;
     "placeBid(uint256,uint256)": FunctionFragment;
     "platformAccount()": FunctionFragment;
@@ -59,6 +60,10 @@ export interface AuctionMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "extentionWindow",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPlatformAccount",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "modulo", values?: undefined): string;
@@ -99,6 +104,10 @@ export interface AuctionMarketInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "endAuction", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "extentionWindow",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPlatformAccount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "modulo", data: BytesLike): Result;
@@ -275,6 +284,8 @@ export interface AuctionMarket extends BaseContract {
 
     extentionWindow(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getPlatformAccount(overrides?: CallOverrides): Promise<[string]>;
+
     modulo(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     placeBid(
@@ -347,6 +358,8 @@ export interface AuctionMarket extends BaseContract {
 
   extentionWindow(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getPlatformAccount(overrides?: CallOverrides): Promise<string>;
+
   modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
   placeBid(
@@ -412,6 +425,8 @@ export interface AuctionMarket extends BaseContract {
     endAuction(_id: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     extentionWindow(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -535,6 +550,8 @@ export interface AuctionMarket extends BaseContract {
 
     extentionWindow(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getPlatformAccount(overrides?: CallOverrides): Promise<BigNumber>;
+
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
@@ -585,6 +602,10 @@ export interface AuctionMarket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     extentionWindow(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getPlatformAccount(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     modulo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

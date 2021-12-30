@@ -42,7 +42,6 @@ contract Ronia721 is ERC721URIStorage, AccessControl {
         _setCreator(_msgSender(), tokenId);
         _setTokenURI(tokenId, _tokenURI);
         setApprovalForAll(marketAddress, true);
-        
     }
 
     function _setCreator(address _creator, uint256 _tokenId) private {
