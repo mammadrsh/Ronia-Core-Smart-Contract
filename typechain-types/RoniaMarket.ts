@@ -26,11 +26,14 @@ export interface RoniaMarketInterface extends utils.Interface {
     "endAuction(uint256)": FunctionFragment;
     "extentionWindow()": FunctionFragment;
     "getPlatformAccount()": FunctionFragment;
+    "getWethAddress()": FunctionFragment;
     "modulo()": FunctionFragment;
     "placeBid(uint256,uint256)": FunctionFragment;
     "platformAccount()": FunctionFragment;
     "roniaAddress()": FunctionFragment;
     "serviceFee()": FunctionFragment;
+    "setPlatformAccount(address)": FunctionFragment;
+    "setWethAddress(address)": FunctionFragment;
     "updateAuction(uint256,uint256)": FunctionFragment;
     "wethAddress()": FunctionFragment;
   };
@@ -66,6 +69,10 @@ export interface RoniaMarketInterface extends utils.Interface {
     functionFragment: "getPlatformAccount",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "getWethAddress",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "modulo", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "placeBid",
@@ -82,6 +89,14 @@ export interface RoniaMarketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "serviceFee",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPlatformAccount",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setWethAddress",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "updateAuction",
@@ -110,6 +125,10 @@ export interface RoniaMarketInterface extends utils.Interface {
     functionFragment: "getPlatformAccount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWethAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "modulo", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "placeBid", data: BytesLike): Result;
   decodeFunctionResult(
@@ -121,6 +140,14 @@ export interface RoniaMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "serviceFee", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setPlatformAccount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setWethAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "updateAuction",
     data: BytesLike
@@ -286,6 +313,8 @@ export interface RoniaMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<[string]>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<[string]>;
+
     modulo(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     placeBid(
@@ -299,6 +328,16 @@ export interface RoniaMarket extends BaseContract {
     roniaAddress(overrides?: CallOverrides): Promise<[string]>;
 
     serviceFee(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     updateAuction(
       _id: BigNumberish,
@@ -360,6 +399,8 @@ export interface RoniaMarket extends BaseContract {
 
   getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
+  getWethAddress(overrides?: CallOverrides): Promise<string>;
+
   modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
   placeBid(
@@ -373,6 +414,16 @@ export interface RoniaMarket extends BaseContract {
   roniaAddress(overrides?: CallOverrides): Promise<string>;
 
   serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+  setPlatformAccount(
+    _platformAccount: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setWethAddress(
+    _wethAddress: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   updateAuction(
     _id: BigNumberish,
@@ -428,6 +479,8 @@ export interface RoniaMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<string>;
+
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
@@ -441,6 +494,16 @@ export interface RoniaMarket extends BaseContract {
     roniaAddress(overrides?: CallOverrides): Promise<string>;
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     updateAuction(
       _id: BigNumberish,
@@ -552,6 +615,8 @@ export interface RoniaMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
@@ -565,6 +630,16 @@ export interface RoniaMarket extends BaseContract {
     roniaAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     updateAuction(
       _id: BigNumberish,
@@ -607,6 +682,8 @@ export interface RoniaMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     modulo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     placeBid(
@@ -620,6 +697,16 @@ export interface RoniaMarket extends BaseContract {
     roniaAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     serviceFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     updateAuction(
       _id: BigNumberish,

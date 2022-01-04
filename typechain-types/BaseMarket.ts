@@ -6,6 +6,8 @@ import {
   BigNumber,
   BytesLike,
   CallOverrides,
+  ContractTransaction,
+  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -17,15 +19,22 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export interface BaseMarketInterface extends utils.Interface {
   functions: {
     "getPlatformAccount()": FunctionFragment;
+    "getWethAddress()": FunctionFragment;
     "modulo()": FunctionFragment;
     "platformAccount()": FunctionFragment;
     "roniaAddress()": FunctionFragment;
     "serviceFee()": FunctionFragment;
+    "setPlatformAccount(address)": FunctionFragment;
+    "setWethAddress(address)": FunctionFragment;
     "wethAddress()": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "getPlatformAccount",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWethAddress",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "modulo", values?: undefined): string;
@@ -42,12 +51,24 @@ export interface BaseMarketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setPlatformAccount",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setWethAddress",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "wethAddress",
     values?: undefined
   ): string;
 
   decodeFunctionResult(
     functionFragment: "getPlatformAccount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWethAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "modulo", data: BytesLike): Result;
@@ -60,6 +81,14 @@ export interface BaseMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "serviceFee", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setPlatformAccount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setWethAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "wethAddress",
     data: BytesLike
@@ -97,6 +126,8 @@ export interface BaseMarket extends BaseContract {
   functions: {
     getPlatformAccount(overrides?: CallOverrides): Promise<[string]>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<[string]>;
+
     modulo(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     platformAccount(overrides?: CallOverrides): Promise<[string]>;
@@ -105,10 +136,22 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     wethAddress(overrides?: CallOverrides): Promise<[string]>;
   };
 
   getPlatformAccount(overrides?: CallOverrides): Promise<string>;
+
+  getWethAddress(overrides?: CallOverrides): Promise<string>;
 
   modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -118,10 +161,22 @@ export interface BaseMarket extends BaseContract {
 
   serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+  setPlatformAccount(
+    _platformAccount: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setWethAddress(
+    _wethAddress: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   wethAddress(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     getPlatformAccount(overrides?: CallOverrides): Promise<string>;
+
+    getWethAddress(overrides?: CallOverrides): Promise<string>;
 
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -131,6 +186,16 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     wethAddress(overrides?: CallOverrides): Promise<string>;
   };
 
@@ -138,6 +203,8 @@ export interface BaseMarket extends BaseContract {
 
   estimateGas: {
     getPlatformAccount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getWethAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -147,6 +214,16 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     wethAddress(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
@@ -155,6 +232,8 @@ export interface BaseMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getWethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     modulo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     platformAccount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -162,6 +241,16 @@ export interface BaseMarket extends BaseContract {
     roniaAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     serviceFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setWethAddress(
+      _wethAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     wethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };

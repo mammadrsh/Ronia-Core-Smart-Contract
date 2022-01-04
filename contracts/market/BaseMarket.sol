@@ -12,7 +12,7 @@ abstract contract BaseMarket is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @notice Ronia commission on every sale
-    uint256 public serviceFee = 2_50000;  // 2.50000%
+    uint256 public serviceFee = 2_50000; // 2.50000%
     // @notice precision 100.00000%
     uint256 public modulo = 100_00000; // 100.00000%
 
@@ -21,7 +21,7 @@ abstract contract BaseMarket is ReentrancyGuard {
     address public wethAddress;
     // @notice platform funds collector
     address payable public platformAccount;
-    
+
     constructor(address _weth, address payable _platformAccount) {
         wethAddress = _weth;
         platformAccount = _platformAccount;
@@ -29,6 +29,18 @@ abstract contract BaseMarket is ReentrancyGuard {
 
     function getPlatformAccount() public view returns (address payable) {
         return platformAccount;
+    }
+
+    function setPlatformAccount(address payable _platformAccount) public {
+        platformAccount = _platformAccount;
+    }
+
+    function getWethAddress() public view returns (address) {
+        return wethAddress;
+    }
+
+    function setWethAddress(address payable _wethAddress) public {
+        wethAddress = _wethAddress;
     }
 
     function _fundPay(

@@ -22,6 +22,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getWethAddress",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "modulo",
     outputs: [
       {
@@ -70,6 +83,32 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address payable",
+        name: "_platformAccount",
+        type: "address",
+      },
+    ],
+    name: "setPlatformAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address payable",
+        name: "_wethAddress",
+        type: "address",
+      },
+    ],
+    name: "setWethAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
