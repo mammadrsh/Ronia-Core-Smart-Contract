@@ -34,7 +34,7 @@ contract Ronia721 is ERC721URIStorage, AccessControl {
         return super.supportsInterface(_interfaceId);
     }
 
-    function mint(string memory _tokenURI) external {
+    function mint(string memory _tokenURI) external returns(uint256) {
         tokenCounter.increment();
         uint256 tokenId = tokenCounter.current();
 
@@ -42,6 +42,8 @@ contract Ronia721 is ERC721URIStorage, AccessControl {
         _setCreator(_msgSender(), tokenId);
         _setTokenURI(tokenId, _tokenURI);
         setApprovalForAll(marketAddress, true);
+
+        return tokenId;
     }
 
     function _setCreator(address _creator, uint256 _tokenId) private {

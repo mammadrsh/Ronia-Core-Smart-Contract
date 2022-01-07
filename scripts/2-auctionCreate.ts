@@ -16,7 +16,7 @@ async function main() {
     const provider= new ethers.providers.JsonRpcProvider()
     const roniaMarket = new ethers.Contract(process.env.Ronia_Market_Address || '', RoniaMarket.abi, accounts[0])
 
-    let transaction = await roniaMarket.connect(accounts[0]).createAuction(8, process.env.Ronia721_Address || '', 12345, 13456, 98000, "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")
+    let transaction = await roniaMarket.connect(accounts[0]).createAuction(1, process.env.Ronia721_Address || '', 12345, 13456, 98000, "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")
 
 }
 

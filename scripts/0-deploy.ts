@@ -11,7 +11,6 @@ async function main() {
     //deploy roniaMarket
     const RoniaMarket = await ethers.getContractFactory("RoniaMarket");
     const roniaMarket = await RoniaMarket.deploy(
-        weth.address,
         accounts[0].address
     );
     await roniaMarket.deployed();

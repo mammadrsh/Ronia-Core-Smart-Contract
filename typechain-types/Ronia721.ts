@@ -480,7 +480,7 @@ export interface Ronia721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mint(_tokenURI: string, overrides?: CallOverrides): Promise<void>;
+    mint(_tokenURI: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
