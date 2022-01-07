@@ -20,24 +20,26 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface AuctionMarketInterface extends utils.Interface {
   functions: {
+    "approveScale()": FunctionFragment;
     "auctions(uint256)": FunctionFragment;
     "cancelAuction(uint256)": FunctionFragment;
     "createAuction(uint256,address,uint256,uint256,uint256,address)": FunctionFragment;
     "endAuction(uint256)": FunctionFragment;
     "extentionWindow()": FunctionFragment;
     "getPlatformAccount()": FunctionFragment;
-    "getWethAddress()": FunctionFragment;
     "modulo()": FunctionFragment;
     "placeBid(uint256,uint256)": FunctionFragment;
     "platformAccount()": FunctionFragment;
     "roniaAddress()": FunctionFragment;
     "serviceFee()": FunctionFragment;
     "setPlatformAccount(address)": FunctionFragment;
-    "setWethAddress(address)": FunctionFragment;
     "updateAuction(uint256,uint256)": FunctionFragment;
-    "wethAddress()": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "approveScale",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "auctions",
     values: [BigNumberish]
@@ -69,10 +71,6 @@ export interface AuctionMarketInterface extends utils.Interface {
     functionFragment: "getPlatformAccount",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "getWethAddress",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "modulo", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "placeBid",
@@ -95,18 +93,14 @@ export interface AuctionMarketInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setWethAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "updateAuction",
     values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "wethAddress",
-    values?: undefined
-  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "approveScale",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "auctions", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "cancelAuction",
@@ -125,10 +119,6 @@ export interface AuctionMarketInterface extends utils.Interface {
     functionFragment: "getPlatformAccount",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getWethAddress",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "modulo", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "placeBid", data: BytesLike): Result;
   decodeFunctionResult(
@@ -145,15 +135,7 @@ export interface AuctionMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setWethAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "updateAuction",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "wethAddress",
     data: BytesLike
   ): Result;
 
@@ -262,6 +244,8 @@ export interface AuctionMarket extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    approveScale(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -313,8 +297,6 @@ export interface AuctionMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<[string]>;
 
-    getWethAddress(overrides?: CallOverrides): Promise<[string]>;
-
     modulo(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     placeBid(
@@ -334,19 +316,14 @@ export interface AuctionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setWethAddress(
-      _wethAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    wethAddress(overrides?: CallOverrides): Promise<[string]>;
   };
+
+  approveScale(overrides?: CallOverrides): Promise<BigNumber>;
 
   auctions(
     arg0: BigNumberish,
@@ -399,8 +376,6 @@ export interface AuctionMarket extends BaseContract {
 
   getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
-  getWethAddress(overrides?: CallOverrides): Promise<string>;
-
   modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
   placeBid(
@@ -420,20 +395,15 @@ export interface AuctionMarket extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setWethAddress(
-    _wethAddress: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   updateAuction(
     _id: BigNumberish,
     _reservePrice: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  wethAddress(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -479,8 +449,6 @@ export interface AuctionMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
-    getWethAddress(overrides?: CallOverrides): Promise<string>;
-
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
@@ -500,18 +468,11 @@ export interface AuctionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setWethAddress(
-      _wethAddress: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    wethAddress(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -589,6 +550,8 @@ export interface AuctionMarket extends BaseContract {
   };
 
   estimateGas: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     auctions(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     cancelAuction(
@@ -615,8 +578,6 @@ export interface AuctionMarket extends BaseContract {
 
     getPlatformAccount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getWethAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
 
     placeBid(
@@ -636,21 +597,16 @@ export interface AuctionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setWethAddress(
-      _wethAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    wethAddress(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    approveScale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -682,8 +638,6 @@ export interface AuctionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getWethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     modulo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     placeBid(
@@ -703,17 +657,10 @@ export interface AuctionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setWethAddress(
-      _wethAddress: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    wethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

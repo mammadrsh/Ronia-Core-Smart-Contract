@@ -6,7 +6,7 @@ import { RoniaMarket, Ronia721, WETH } from "../../typechain-types";
 import { formatUnits } from "ethers/lib/utils";
 import { BigNumber, Contract, Signer } from "ethers";
 import { Address } from "ethereumjs-util";
-const { deployWETH, deployRonia721, ONE_ETH } = require("../utils");
+const { deployWETH, deployRonia721, TENTH_ETH, ONE_ETH, TWO_ETH } = require("../utils");
 
 chai.use(asPromised);
 
@@ -24,7 +24,6 @@ describe("RoniaMarket", () => {
     marketAccount = accounts[0];
     const RoniaMarket = await ethers.getContractFactory("RoniaMarket");
     roniaMarket = (await RoniaMarket.deploy(
-      weth.address,
       marketAccount.getAddress()
     )) as RoniaMarket;
     ronia721 = await deployRonia721(roniaMarket.address);
@@ -34,7 +33,6 @@ describe("RoniaMarket", () => {
     it("should be able to deploy", async () => {
       const RoniaMarket = await ethers.getContractFactory("RoniaMarket");
       const roniaMarket = await RoniaMarket.deploy(
-        weth.address,
         marketAccount.getAddress()
       );
 
@@ -145,7 +143,7 @@ describe("RoniaMarket", () => {
 
     it("should revert if the specified auction does not exist", async () => {
       await expect(
-        roniaMarket.placeBid(11111, ONE_ETH)
+        roniaMarket.placeBid(11111, TWO_ETH)
       ).eventually.rejectedWith(`Auction is not exist or finished!`);
     });
   });

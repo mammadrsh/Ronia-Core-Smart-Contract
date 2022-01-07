@@ -13,17 +13,16 @@ abstract contract BaseMarket is ReentrancyGuard {
 
     /// @notice Ronia commission on every sale
     uint256 public serviceFee = 2_50000; // 2.50000%
-    // @notice precision 100.00000%
+    /// @notice Approve amount scale
+    uint256 public approveScale = 5_00000; // 5.00000%
+    /// @notice precision 100.00000%
     uint256 public modulo = 100_00000; // 100.00000%
 
-    // / The address of the WETH contract, so that any ETH transferred can be handled as an ERC-20
     address public roniaAddress;
-    address public wethAddress;
     // @notice platform funds collector
     address payable public platformAccount;
 
-    constructor(address _weth, address payable _platformAccount) {
-        wethAddress = _weth;
+    constructor(address payable _platformAccount) {
         platformAccount = _platformAccount;
     }
 
@@ -35,31 +34,18 @@ abstract contract BaseMarket is ReentrancyGuard {
         platformAccount = _platformAccount;
     }
 
-    function getWethAddress() public view returns (address) {
-        return wethAddress;
-    }
-
-    function setWethAddress(address payable _wethAddress) public {
-        wethAddress = _wethAddress;
-    }
-
     function _fundPay(
-        address payable to,
-        uint256 amount,
-        address currency
+        address payable _from,
+        address payable _to,
+        uint256 _amount,
+        address _currency
     ) internal {
-        // If the auction is in ETH, unwrap it from its underlying WETH and try to send it to the recipient.
-        if (currency == address(0)) {
-            IWETH(wethAddress).withdraw(amount);
+        uint256 roniaFee = (_amount / modulo) * serviceFee;
+        uint256 sellerRecieveAmount = _amount - roniaFee;
 
-            // If the ETH transfer fails (sigh), rewrap the ETH and try send it as WETH.
-            if (!_safeTransferETH(to, amount)) {
-                IWETH(wethAddress).deposit{value: amount}();
-                IERC20(wethAddress).safeTransfer(to, amount);
-            }
-        } else {
-            IERC20(currency).safeTransfer(to, amount);
-        }
+        // Pay market serviceFee
+        IERC20(_currency).transferFrom(_from, platformAccount, roniaFee);
+        IERC20(_currency).transferFrom(_from, _to, sellerRecieveAmount);
     }
 
     function _safeTransferETH(address to, uint256 value)
@@ -71,29 +57,17 @@ abstract contract BaseMarket is ReentrancyGuard {
     }
 
     /**
-     * @dev Given an amount and a currency, transfer the currency to this contract.
-     * If the currency is ETH (0x0), attempt to wrap the amount as WETH
+     * @dev Given an amount and a currency, approve the currency to this contract.
      */
-    function _fundRecieve(uint256 amount, address currency) internal {
-        // If this is an ETH bid, ensure they sent enough and convert it to WETH under the hood
-        if (currency == address(0)) {
-            require(
-                msg.value == amount,
-                "Sent ETH Value does not match specified bid amount"
-            );
-            IWETH(wethAddress).deposit{value: amount}();
-        } else {
-            // We must check the balance that was actually transferred to the auction,
-            // as some tokens impose a transfer fee and would not actually transfer the
-            // full amount to the market, resulting in potentally locked funds
-            IERC20 token = IERC20(currency);
-            uint256 beforeBalance = token.balanceOf(address(this));
-            token.safeTransferFrom(msg.sender, address(this), amount);
-            uint256 afterBalance = token.balanceOf(address(this));
-            require(
-                beforeBalance.add(amount) == afterBalance,
-                "Token transfer call did not transfer expected amount"
-            );
-        }
+    function _approveFunds(uint256 _amount, address _currency) internal {
+        // We must check the balance that was actually transferred to the auction,
+        // as some tokens impose a transfer fee and would not actually transfer the
+        // full amount to the market, resulting in potentally locked funds
+        // add 5% to the approve in case of transfer fee
+        IERC20 token = IERC20(_currency);
+        uint256 balance = token.balanceOf(address(this));
+        uint256 approveAmount = _amount * approveScale;
+        require(balance > approveAmount, "User does not have enought balance.");
+        token.approve(address(this), approveAmount);
     }
 }
