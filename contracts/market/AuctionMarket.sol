@@ -23,7 +23,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
 
     modifier _auctionExists(uint256 _id) {
         require(
-            auctions[_id].seller == payable(0),
+            auctions[_id].seller != payable(0),
             "Auction is not exist or finished!"
         );
         _;
@@ -47,6 +47,10 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             IERC165(_tokenContract).supportsInterface(interfaceId),
             "tokenContract does not support ERC721 interface"
         );
+        require(
+            IERC165(_tokenContract).supportsInterface(interfaceId),
+            "tokenContract does not support ERC721 interface"
+        );
 
         address tokenOwner = IERC721(_tokenContract).ownerOf(_tokenId);
         require(msg.sender == tokenOwner, "Caller must be owner for token id");
@@ -64,11 +68,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             auctionCurrency: _auctionCurrency
         });
 
-        IERC721(_tokenContract).transferFrom(
-            tokenOwner,
-            address(this),
-            _tokenId
-        );
+        IERC721(_tokenContract).approve(address(this), _tokenId);
 
         auctionIdCounter.increment();
 
@@ -100,7 +100,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         nonReentrant
     {
         Auction storage auction = auctions[_id];
-        address payable lastBidder = auctions[_id].bidder;
+        // address payable lastBidder = auctions[_id].bidder;
         require(auction.reservePrice > 0, "Must send at least reservePrice");
         require(
             block.timestamp >= auction.startTime,
@@ -116,13 +116,8 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             "Must send at least reservePrice"
         );
 
-        if (lastBidder != address(0)) {
-            //Transfer Bid to last Bidder
-            _fundPay(lastBidder, auction.bid, auction.auctionCurrency);
-        }
-
-        // Transfer Bid amount to this contract
-        _fundRecieve(_amount, auction.auctionCurrency);
+        // Approve funds for Market access
+        _approveFunds(_amount, auction.auctionCurrency);
 
         auction.bid = _amount;
         auction.bidder = payable(msg.sender);
@@ -210,7 +205,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
 
         // Transfer the NFT token to the winner
         IERC721(auction.tokenContract).safeTransferFrom(
-            address(this),
+            seller,
             winner,
             auction.tokenId
         );
@@ -221,14 +216,8 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         //     _paymentAmount
         // );
 
-        // Pay market serviceFee
-        // pay platform fee
-        uint256 roniaFee = (winningBid / modulo) * serviceFee;
-        (bool serviceFeeSuccess, ) = platformAccount.call{value: roniaFee}("");
-        require(serviceFeeSuccess, "Service Fee payment failed");
-
-        // Pay the seller
-        _fundPay(payable(seller), auction.bid, auction.auctionCurrency);
+        // Pay the seller and Ronia servicefee
+        _fundPay(payable(winner), payable(seller), auction.bid, auction.auctionCurrency);
 
         delete auctions[_id];
 
@@ -236,14 +225,6 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
     }
 
     function _cancelAuction(uint256 _id) internal {
-        Auction storage auction = auctions[_id];
-        address tokenOwner = auction.seller;
-        IERC721(auction.tokenContract).safeTransferFrom(
-            address(this),
-            tokenOwner,
-            auction.tokenId
-        );
-
         emit AuctionCanceled(_id);
 
         delete auctions[_id];

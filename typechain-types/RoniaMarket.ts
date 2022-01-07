@@ -20,6 +20,7 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface RoniaMarketInterface extends utils.Interface {
   functions: {
+    "approveScale()": FunctionFragment;
     "auctions(uint256)": FunctionFragment;
     "cancelAuction(uint256)": FunctionFragment;
     "createAuction(uint256,address,uint256,uint256,uint256,address)": FunctionFragment;
@@ -31,10 +32,14 @@ export interface RoniaMarketInterface extends utils.Interface {
     "platformAccount()": FunctionFragment;
     "roniaAddress()": FunctionFragment;
     "serviceFee()": FunctionFragment;
+    "setPlatformAccount(address)": FunctionFragment;
     "updateAuction(uint256,uint256)": FunctionFragment;
-    "wethAddress()": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "approveScale",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "auctions",
     values: [BigNumberish]
@@ -84,14 +89,18 @@ export interface RoniaMarketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setPlatformAccount",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateAuction",
     values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "wethAddress",
-    values?: undefined
-  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "approveScale",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "auctions", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "cancelAuction",
@@ -122,11 +131,11 @@ export interface RoniaMarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "serviceFee", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "updateAuction",
+    functionFragment: "setPlatformAccount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "wethAddress",
+    functionFragment: "updateAuction",
     data: BytesLike
   ): Result;
 
@@ -235,6 +244,8 @@ export interface RoniaMarket extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    approveScale(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -300,14 +311,19 @@ export interface RoniaMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    wethAddress(overrides?: CallOverrides): Promise<[string]>;
   };
+
+  approveScale(overrides?: CallOverrides): Promise<BigNumber>;
 
   auctions(
     arg0: BigNumberish,
@@ -374,15 +390,20 @@ export interface RoniaMarket extends BaseContract {
 
   serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+  setPlatformAccount(
+    _platformAccount: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   updateAuction(
     _id: BigNumberish,
     _reservePrice: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  wethAddress(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -442,13 +463,16 @@ export interface RoniaMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    wethAddress(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -526,6 +550,8 @@ export interface RoniaMarket extends BaseContract {
   };
 
   estimateGas: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     auctions(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     cancelAuction(
@@ -566,16 +592,21 @@ export interface RoniaMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    wethAddress(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    approveScale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     auctions(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -621,12 +652,15 @@ export interface RoniaMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     updateAuction(
       _id: BigNumberish,
       _reservePrice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    wethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

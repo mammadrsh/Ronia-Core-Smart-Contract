@@ -9,6 +9,19 @@ import type { BaseMarket, BaseMarketInterface } from "../BaseMarket";
 const _abi = [
   {
     inputs: [],
+    name: "approveScale",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getPlatformAccount",
     outputs: [
       {
@@ -73,16 +86,16 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "wethAddress",
-    outputs: [
+    inputs: [
       {
-        internalType: "address",
-        name: "",
+        internalType: "address payable",
+        name: "_platformAccount",
         type: "address",
       },
     ],
-    stateMutability: "view",
+    name: "setPlatformAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ];

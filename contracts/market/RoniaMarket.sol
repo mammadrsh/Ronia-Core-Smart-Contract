@@ -11,7 +11,7 @@ import {BaseMarket} from "./BaseMarket.sol";
 contract RoniaMarket is IRoniaMarket, BaseMarket, AuctionMarket {
 
 
-    constructor(address _weth, address payable _platformAccount) BaseMarket(_weth, _platformAccount) {
+    constructor(address payable _platformAccount) BaseMarket(_platformAccount) {
         //
     }
 

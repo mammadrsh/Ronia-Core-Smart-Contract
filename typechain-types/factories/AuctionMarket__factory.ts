@@ -176,6 +176,19 @@ const _abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "approveScale",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -403,6 +416,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address payable",
+        name: "_platformAccount",
+        type: "address",
+      },
+    ],
+    name: "setPlatformAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "_id",
         type: "uint256",
@@ -416,19 +442,6 @@ const _abi = [
     name: "updateAuction",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "wethAddress",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ];

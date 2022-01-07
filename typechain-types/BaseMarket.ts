@@ -6,6 +6,8 @@ import {
   BigNumber,
   BytesLike,
   CallOverrides,
+  ContractTransaction,
+  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -16,14 +18,19 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface BaseMarketInterface extends utils.Interface {
   functions: {
+    "approveScale()": FunctionFragment;
     "getPlatformAccount()": FunctionFragment;
     "modulo()": FunctionFragment;
     "platformAccount()": FunctionFragment;
     "roniaAddress()": FunctionFragment;
     "serviceFee()": FunctionFragment;
-    "wethAddress()": FunctionFragment;
+    "setPlatformAccount(address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "approveScale",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getPlatformAccount",
     values?: undefined
@@ -42,10 +49,14 @@ export interface BaseMarketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "wethAddress",
-    values?: undefined
+    functionFragment: "setPlatformAccount",
+    values: [string]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "approveScale",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPlatformAccount",
     data: BytesLike
@@ -61,7 +72,7 @@ export interface BaseMarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "serviceFee", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "wethAddress",
+    functionFragment: "setPlatformAccount",
     data: BytesLike
   ): Result;
 
@@ -95,6 +106,8 @@ export interface BaseMarket extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    approveScale(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getPlatformAccount(overrides?: CallOverrides): Promise<[string]>;
 
     modulo(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -105,8 +118,13 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    wethAddress(overrides?: CallOverrides): Promise<[string]>;
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  approveScale(overrides?: CallOverrides): Promise<BigNumber>;
 
   getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
@@ -118,9 +136,14 @@ export interface BaseMarket extends BaseContract {
 
   serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
-  wethAddress(overrides?: CallOverrides): Promise<string>;
+  setPlatformAccount(
+    _platformAccount: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     getPlatformAccount(overrides?: CallOverrides): Promise<string>;
 
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
@@ -131,12 +154,17 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
-    wethAddress(overrides?: CallOverrides): Promise<string>;
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {};
 
   estimateGas: {
+    approveScale(overrides?: CallOverrides): Promise<BigNumber>;
+
     getPlatformAccount(overrides?: CallOverrides): Promise<BigNumber>;
 
     modulo(overrides?: CallOverrides): Promise<BigNumber>;
@@ -147,10 +175,15 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<BigNumber>;
 
-    wethAddress(overrides?: CallOverrides): Promise<BigNumber>;
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    approveScale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getPlatformAccount(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -163,6 +196,9 @@ export interface BaseMarket extends BaseContract {
 
     serviceFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    wethAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    setPlatformAccount(
+      _platformAccount: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }
