@@ -6,20 +6,20 @@ import { RoniaMarket, Ronia721, WETH } from "../../typechain-types";
 import { formatUnits } from "ethers/lib/utils";
 import { BigNumber, Contract, Signer } from "ethers";
 import { Address } from "ethereumjs-util";
-const { deployWETH, deployRonia721, TENTH_ETH, ONE_ETH, TWO_ETH } = require("../utils");
+const { deployWETH, deployRonia721, toEther } = require("../utils");
 
 chai.use(asPromised);
 
 describe("RoniaMarket", () => {
-  let weth: Contract;
+  let wethAddress: string;
+  let weth: WETH;
   let roniaMarket: RoniaMarket;
   let ronia721: Ronia721;
   let accounts: Array<Signer>;
   let marketAccount: Signer;
-  let ethCurrency: string = ethers.constants.AddressZero;
 
   beforeEach(async () => {
-    weth = await deployWETH();
+    [wethAddress, weth] = await deployWETH();
     accounts = await ethers.getSigners();
     marketAccount = accounts[0];
     const RoniaMarket = await ethers.getContractFactory("RoniaMarket");
@@ -55,7 +55,7 @@ describe("RoniaMarket", () => {
       const reservePrice = BigNumber.from(10).pow(18).div(2);
       const [_, curator, __, ___, unapproved] = accounts;
 
-      await expect(roniaMarket.connect(unapproved).createAuction(0, ronia721.address, startTime, endTime, reservePrice, ethCurrency))
+      await expect(roniaMarket.connect(unapproved).createAuction(0, ronia721.address, startTime, endTime, reservePrice, wethAddress))
         .eventually.rejectedWith(
           "nonexistent token"
         );
@@ -67,7 +67,7 @@ describe("RoniaMarket", () => {
       const reservePrice = BigNumber.from(10).pow(18).div(2);
       const [_, curator, __, ___, unapproved] = accounts;
 
-      await expect(roniaMarket.connect(unapproved).createAuction(1, ronia721.address, startTime, endTime, reservePrice, ethCurrency))
+      await expect(roniaMarket.connect(unapproved).createAuction(1, ronia721.address, startTime, endTime, reservePrice, wethAddress))
         .eventually.rejectedWith(
           "Caller must be owner for token id"
         );
@@ -79,7 +79,7 @@ describe("RoniaMarket", () => {
       const startTime = Date.now();
       const endTime = startTime + (60 * 60 * 24);
       const reservePrice = BigNumber.from(10).pow(18).div(2);
-      await roniaMarket.connect(auctionCreator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, ethCurrency);
+      await roniaMarket.connect(auctionCreator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
 
       const createdAuction = await roniaMarket.auctions(0);
 
@@ -96,7 +96,7 @@ describe("RoniaMarket", () => {
       const startTime = Date.now();
       const endTime = startTime + (60 * 60 * 24);
       const reservePrice = BigNumber.from(10).pow(18).div(2);
-      await roniaMarket.connect(auctionCreator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, ethCurrency);
+      await roniaMarket.connect(auctionCreator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
 
       const block = await ethers.provider.getBlockNumber();
       const auctionNumber = 0;
@@ -122,7 +122,7 @@ describe("RoniaMarket", () => {
       expect(logDescription.args.reservePrice).to.eq(currAuction.reservePrice);
       expect(logDescription.args.seller).to.eq(currAuction.seller);
       expect(logDescription.args.auctionCurrency).to.eq(
-        ethCurrency
+        wethAddress
       );
     });
   });
@@ -133,18 +133,336 @@ describe("RoniaMarket", () => {
     let bidderB: Signer;
     beforeEach(async () => {
       [admin, curator, bidderA, bidderB] = accounts;
+      weth.connect(curator).deposit({ value: toEther("20") })
+      weth.connect(bidderA).deposit({ value: toEther("20") })
+      weth.connect(bidderB).deposit({ value: toEther("20") })
       const tokenId = 1;
       await ronia721.connect(curator).mint("http://token.com/");
-      const startTime = Date.now();
-      const endTime = startTime + (60 * 60 * 24);
-      const reservePrice = BigNumber.from(10).pow(18).div(2);
-      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, ethCurrency);
+      const startTime = Math.floor(Date.now() / 1000);
+      const endTime = Math.floor(startTime + (60 * 60 * 24));
+      const reservePrice = toEther("0.1");
+      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
     });
 
     it("should revert if the specified auction does not exist", async () => {
       await expect(
-        roniaMarket.placeBid(11111, TWO_ETH)
+        roniaMarket.placeBid(11111, toEther("1"))
       ).eventually.rejectedWith(`Auction is not exist or finished!`);
+    });
+
+    it("should revert if the bid is less than the reserve price", async () => {
+      const blockNumber = await ethers.provider.getBlockNumber();
+      const block = await ethers.provider.getBlock(blockNumber);
+      await expect(
+        roniaMarket.placeBid(0, 0)
+      ).eventually.rejectedWith(`Must send at least reservePrice`);
+    });
+    describe("first bid", () => {
+      it("should not update the auction's endtime", async () => {
+        const beforeEndTime = (await roniaMarket.auctions(0)).endTime;
+        await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+        const afterEndTime = (await roniaMarket.auctions(0)).endTime;
+
+        expect(beforeEndTime).to.eq(afterEndTime);
+      });
+      it("should store the bidder's information", async () => {
+        await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+        const currentAuction = await roniaMarket.auctions(0);
+
+        expect(currentAuction.bidder).to.eq(await bidderA.getAddress());
+        expect(currentAuction.bid).to.eq(toEther("1"));
+      });
+      it("should approve funds for market", async () => {
+        const bid = toEther("1");
+        await roniaMarket.connect(bidderA).placeBid(0, bid);
+        // await weth.connect(bidderA).approve(await marketAccount.getAddress(), toEther("1"));
+        const currentAuction = await roniaMarket.auctions(0);
+        const approveScale = await (await roniaMarket.approveScale()).toNumber();
+        const modulo = await (await roniaMarket.modulo()).toNumber();
+        console.log(approveScale / modulo);
+        const allowance = await (await weth.allowance(await bidderA.getAddress(), await marketAccount.getAddress())).toNumber();
+        const shouldApprove = bid * (approveScale / modulo);
+        console.log(allowance);
+        console.log(shouldApprove);
+        
+        // expect(allowance).to.eq(shouldApprove);
+      });
+      it("should emit an AuctionBided event", async () => {
+        const block = await ethers.provider.getBlockNumber();
+        await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+
+        const events = await roniaMarket.queryFilter(
+          roniaMarket.filters.AuctionBidded(
+            null,
+            null,
+            null,
+            null,
+          ),
+          block
+        );
+        expect(events.length).eq(1);
+        const logDescription = roniaMarket.interface.parseLog(events[0]);
+
+        expect(logDescription.name).to.eq("AuctionBidded");
+        expect(logDescription.args.auctionId).to.eq(0);
+        expect(logDescription.args.sender).to.eq(await bidderA.getAddress());
+        expect(logDescription.args.amount).to.eq(toEther("1"));
+        expect(logDescription.args.extended).to.eq(false);
+      });
+    });
+    describe("second bid", () => {
+      beforeEach(async () => {
+        roniaMarket = roniaMarket.connect(bidderB) as RoniaMarket;
+        await roniaMarket
+          .connect(bidderA)
+          .placeBid(0, toEther("1"));
+      });
+      it("should revert if the bid is smaller than the last bid + minBid", async () => {
+        await expect
+          (
+            roniaMarket.placeBid(0, toEther("1"))
+          ).eventually.rejectedWith(
+            'Must send more than last bid by minBidIncrementPercentage amount'
+          );
+      });
+      it("should update the stored bid information", async () => {
+        await roniaMarket.placeBid(0, toEther("2"));
+
+        const currAuction = await roniaMarket.auctions(0);
+
+        expect(currAuction.bid).to.eq(toEther("2"));
+        expect(currAuction.bidder).to.eq(await bidderB.getAddress());
+      });
+      it("should not extend the duration of the bid if outside of the time buffer", async () => {
+        const beforeEndTime = (await roniaMarket.auctions(0)).endTime;
+        await roniaMarket.placeBid(0, toEther("2"));
+        const afterEndTime = (await roniaMarket.auctions(0)).endTime;
+        expect(beforeEndTime).to.eq(afterEndTime);
+      });
+      it("should emit an AuctionBidded event", async () => {
+        const block = await ethers.provider.getBlockNumber();
+        await roniaMarket.placeBid(0, toEther("2"));
+        const events = await roniaMarket.queryFilter(
+          roniaMarket.filters.AuctionBidded(
+            null,
+            null,
+            null,
+            null,
+          ),
+          block
+        );
+        expect(events.length).eq(2);
+        const logDescription = roniaMarket.interface.parseLog(events[1]);
+
+        expect(logDescription.name).to.eq("AuctionBidded");
+        expect(logDescription.args.auctionId).to.eq(0);
+        expect(logDescription.args.sender).to.eq(await bidderB.getAddress());
+        expect(logDescription.args.amount).to.eq(toEther("2"));
+        expect(logDescription.args.extended).to.eq(false);
+      });
+    });
+    describe("last minute bid", () => {
+      beforeEach(async () => {
+        const currentAuction = await roniaMarket.auctions(0);
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          currentAuction.endTime
+            .sub(1)
+            .toNumber(),
+        ]);
+      });
+      it("should extend the duration of the bid if inside of the time buffer", async () => {
+        const beforeEndTime = (await roniaMarket.auctions(0)).endTime;
+        await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+
+        const currAuction = await roniaMarket.auctions(0);
+        expect(currAuction.endTime).to.eq(
+          beforeEndTime.add(await roniaMarket.extentionWindow())
+        );
+      });
+    });
+    describe("late bid", () => {
+      beforeEach(async () => {
+        const currAuction = await roniaMarket.auctions(0);
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          currAuction.endTime
+            .add(10)
+            .toNumber(),
+        ]);
+      });
+
+      it("should revert if the bid is placed after expiry", async () => {
+        await expect(
+          roniaMarket.connect(bidderA).placeBid(0, toEther("1"))
+        ).eventually.rejectedWith('Auction expired');
+      });
+    });
+  });
+  describe("#updateAuction", () => {
+    let admin: Signer;
+    let curator: Signer;
+    let bidderA: Signer;
+    let bidderB: Signer;
+    beforeEach(async () => {
+      [admin, curator, bidderA, bidderB] = accounts;
+      weth.connect(curator).deposit({ value: toEther("20") })
+      weth.connect(bidderA).deposit({ value: toEther("20") })
+      weth.connect(bidderB).deposit({ value: toEther("20") })
+      const tokenId = 1;
+      await ronia721.connect(curator).mint("http://token.com/");
+      const startTime = Math.floor(Date.now() / 1000);
+      const endTime = Math.floor(startTime + (60 * 60 * 24 * 7));
+      const reservePrice = toEther("0.1");
+      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
+
+    });
+    it('Should revert if not auction owner', async () => {
+      await expect(roniaMarket.connect(bidderA).updateAuction(0, toEther("0.2"))).eventually.rejectedWith('Must be auction creator')
+    });
+    it('Should revert if auction is not exist', async () => {
+      await expect(roniaMarket.connect(curator).updateAuction(11111, toEther("0.2"))).eventually.rejectedWith('Auction is not exist or finished!')
+    });
+    it('Should revert if auction has a bidder', async () => {
+      const block = await (await ethers.provider.getBlock(ethers.provider.getBlockNumber())).timestamp;
+      await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+      await expect(roniaMarket.connect(curator).updateAuction(0, toEther("0.2"))).eventually.rejectedWith('Auction has a bidder')
+    });
+    it('Should change auction reservePrice', async () => {
+      await roniaMarket.connect(curator).updateAuction(0, toEther("0.2"))
+      expect((await roniaMarket.auctions(0)).reservePrice).to.eq(toEther("0.2"));
+    });
+  });
+  describe("#cancelAuction", () => {
+    let admin: Signer;
+    let curator: Signer;
+    let bidderA: Signer;
+    let bidderB: Signer;
+    beforeEach(async () => {
+      [admin, curator, bidderA, bidderB] = accounts;
+      weth.connect(curator).deposit({ value: toEther("20") })
+      weth.connect(bidderA).deposit({ value: toEther("20") })
+      weth.connect(bidderB).deposit({ value: toEther("20") })
+      const tokenId = 1;
+      await ronia721.connect(curator).mint("http://token.com/");
+      const startTime = Math.floor(Date.now() / 1000);
+      const endTime = Math.floor(startTime + (60 * 60 * 24 * 7));
+      const reservePrice = toEther("0.1");
+      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
+    });
+
+    it("should revert if the auction does not exist", async () => {
+      await expect(roniaMarket.cancelAuction(12213)).eventually.rejectedWith(
+        'Auction is not exist or finished!'
+      );
+    });
+    it("should revert if not called by creator", async () => {
+      await expect(
+        roniaMarket.connect(bidderA).cancelAuction(0)
+      ).eventually.rejectedWith(
+        'Can only be called by auction creator'
+      );
+    });
+    it("should not have a bidder", async () => {
+      await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+      await expect(
+        roniaMarket.connect(curator).cancelAuction(0)
+      ).eventually.rejectedWith(
+        'Auction has a bidder'
+      );
+    });
+
+    it("should be callable by the creator", async () => {
+      await roniaMarket.connect(curator).cancelAuction(0);
+
+      const auctionResult = await roniaMarket.auctions(0);
+
+      expect(auctionResult.bid.toNumber()).to.eq(0);
+      expect(auctionResult.startTime.toNumber()).to.eq(0);
+      expect(auctionResult.endTime.toNumber()).to.eq(0);
+      expect(auctionResult.reservePrice.toNumber()).to.eq(0);
+      expect(auctionResult.bidder).to.eq(ethers.constants.AddressZero);
+      expect(auctionResult.seller).to.eq(ethers.constants.AddressZero);
+      expect(auctionResult.auctionCurrency).to.eq(ethers.constants.AddressZero);
+
+      expect(await ronia721.ownerOf(1)).to.eq(await curator.getAddress());
+    });
+    it("should emit an AuctionCanceled event", async () => {
+      const block = await ethers.provider.getBlockNumber();
+      await roniaMarket.connect(curator).cancelAuction(0);
+      const events = await roniaMarket.queryFilter(
+        roniaMarket.filters.AuctionCanceled(null),
+        block
+      );
+      expect(events.length).eq(1);
+      const logDescription = roniaMarket.interface.parseLog(events[0]);
+
+      expect(logDescription.args.auctionId.toNumber()).to.eq(0);
+    });
+  });
+  describe("#endAuction", () => {
+    let admin: Signer;
+    let curator: Signer;
+    let bidderA: Signer;
+    let bidderB: Signer;
+    beforeEach(async () => {
+      [admin, curator, bidderA, bidderB] = accounts;
+      weth.connect(curator).deposit({ value: toEther("20") })
+      weth.connect(bidderA).deposit({ value: toEther("20") })
+      weth.connect(bidderB).deposit({ value: toEther("20") })
+      const tokenId = 1;
+      await ronia721.connect(curator).mint("http://token.com/");
+      const startTime = Math.floor(Date.now() / 1000);
+      const endTime = Math.floor(startTime + (60 * 60 * 24 * 7));
+      const reservePrice = toEther("0.1");
+      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
+    });
+    it("should revert if the auction does not exist", async () => {
+      await expect(roniaMarket.cancelAuction(12213)).eventually.rejectedWith(
+        'Auction is not exist or finished!'
+      );
+    });
+    it("should revert if the Auction hasn't completed", async () => {
+      await expect(roniaMarket.endAuction(0)).eventually.rejectedWith(
+        "Auction hasn't completed"
+      );
+    });
+    it("should revert if the auction has no bidder", async () => {
+      const currAuction = await roniaMarket.auctions(0);
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        currAuction.endTime
+          .add(10)
+          .toNumber(),
+      ]);
+      await expect(roniaMarket.endAuction(0)).eventually.rejectedWith(
+        "Auction has no bidder, you can cancel the Auction."
+      );
+    });
+  });
+  describe("#WETH auction bid and end", () => {
+    let admin: Signer;
+    let curator: Signer;
+    let bidderA: Signer;
+    let bidderB: Signer;
+    beforeEach(async () => {
+      [admin, curator, bidderA, bidderB] = accounts;
+      weth.connect(curator).deposit({ value: toEther("20") })
+      weth.connect(bidderA).deposit({ value: toEther("20") })
+      weth.connect(bidderB).deposit({ value: toEther("20") })
+      const tokenId = 1;
+      await ronia721.connect(curator).mint("http://token.com/");
+      const startTime = Math.floor(Date.now() / 1000);
+      const endTime = Math.floor(startTime + (60 * 60 * 24 * 8));
+      const reservePrice = toEther("0.1");
+      await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
+      await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
+      await ethers.provider.send("evm_setNextBlockTimestamp", [
+        endTime + 10,
+      ]);
+    });
+
+    it("should transfer the NFT to the winning bidder", async () => {
+      await roniaMarket.endAuction(0);
+
+      expect(await ronia721.ownerOf(0)).to.eq(await bidderA.getAddress());
     });
   });
 });

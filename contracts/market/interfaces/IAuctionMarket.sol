@@ -37,7 +37,7 @@ interface IAuctionMarket {
         address auctionCurrency
     );
 
-    event AuctionBided(
+    event AuctionBidded(
         uint256 indexed auctionId,
         address sender,
         uint256 amount,
@@ -52,12 +52,13 @@ interface IAuctionMarket {
 
     event AuctionUpdated(uint256 indexed auctionId, uint256 reservePrice);
 
-    event AuctionCanceled(uint256 indexed auctionId);
+    event AuctionCanceled(uint256 indexed auctionId, uint256 canceledAt);
 
     event AuctionEnded(
         uint256 indexed auctionId,
         address winner,
-        uint256 amount
+        uint256 amount,
+        uint256 endedAt
     );
 
     function createAuction(

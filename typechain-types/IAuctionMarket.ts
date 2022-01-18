@@ -71,15 +71,15 @@ export interface IAuctionMarketInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "AuctionBided(uint256,address,uint256,bool)": EventFragment;
-    "AuctionCanceled(uint256)": EventFragment;
+    "AuctionBidded(uint256,address,uint256,bool)": EventFragment;
+    "AuctionCanceled(uint256,uint256)": EventFragment;
     "AuctionCreated(uint256,uint256,address,uint256,uint256,uint256,address,address)": EventFragment;
     "AuctionDurationExtended(uint256,uint256,uint256)": EventFragment;
-    "AuctionEnded(uint256,address,uint256)": EventFragment;
+    "AuctionEnded(uint256,address,uint256,uint256)": EventFragment;
     "AuctionUpdated(uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "AuctionBided"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AuctionBidded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AuctionCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AuctionCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AuctionDurationExtended"): EventFragment;
@@ -87,16 +87,16 @@ export interface IAuctionMarketInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AuctionUpdated"): EventFragment;
 }
 
-export type AuctionBidedEvent = TypedEvent<
+export type AuctionBiddedEvent = TypedEvent<
   [BigNumber, string, BigNumber, boolean],
   { auctionId: BigNumber; sender: string; amount: BigNumber; extended: boolean }
 >;
 
-export type AuctionBidedEventFilter = TypedEventFilter<AuctionBidedEvent>;
+export type AuctionBiddedEventFilter = TypedEventFilter<AuctionBiddedEvent>;
 
 export type AuctionCanceledEvent = TypedEvent<
-  [BigNumber],
-  { auctionId: BigNumber }
+  [BigNumber, BigNumber],
+  { auctionId: BigNumber; canceledAt: BigNumber }
 >;
 
 export type AuctionCanceledEventFilter = TypedEventFilter<AuctionCanceledEvent>;
@@ -135,8 +135,13 @@ export type AuctionDurationExtendedEventFilter =
   TypedEventFilter<AuctionDurationExtendedEvent>;
 
 export type AuctionEndedEvent = TypedEvent<
-  [BigNumber, string, BigNumber],
-  { auctionId: BigNumber; winner: string; amount: BigNumber }
+  [BigNumber, string, BigNumber, BigNumber],
+  {
+    auctionId: BigNumber;
+    winner: string;
+    amount: BigNumber;
+    endedAt: BigNumber;
+  }
 >;
 
 export type AuctionEndedEventFilter = TypedEventFilter<AuctionEndedEvent>;
@@ -275,24 +280,26 @@ export interface IAuctionMarket extends BaseContract {
   };
 
   filters: {
-    "AuctionBided(uint256,address,uint256,bool)"(
+    "AuctionBidded(uint256,address,uint256,bool)"(
       auctionId?: BigNumberish | null,
       sender?: null,
       amount?: null,
       extended?: null
-    ): AuctionBidedEventFilter;
-    AuctionBided(
+    ): AuctionBiddedEventFilter;
+    AuctionBidded(
       auctionId?: BigNumberish | null,
       sender?: null,
       amount?: null,
       extended?: null
-    ): AuctionBidedEventFilter;
+    ): AuctionBiddedEventFilter;
 
-    "AuctionCanceled(uint256)"(
-      auctionId?: BigNumberish | null
+    "AuctionCanceled(uint256,uint256)"(
+      auctionId?: BigNumberish | null,
+      canceledAt?: null
     ): AuctionCanceledEventFilter;
     AuctionCanceled(
-      auctionId?: BigNumberish | null
+      auctionId?: BigNumberish | null,
+      canceledAt?: null
     ): AuctionCanceledEventFilter;
 
     "AuctionCreated(uint256,uint256,address,uint256,uint256,uint256,address,address)"(
@@ -327,15 +334,17 @@ export interface IAuctionMarket extends BaseContract {
       duration?: null
     ): AuctionDurationExtendedEventFilter;
 
-    "AuctionEnded(uint256,address,uint256)"(
+    "AuctionEnded(uint256,address,uint256,uint256)"(
       auctionId?: BigNumberish | null,
       winner?: null,
-      amount?: null
+      amount?: null,
+      endedAt?: null
     ): AuctionEndedEventFilter;
     AuctionEnded(
       auctionId?: BigNumberish | null,
       winner?: null,
-      amount?: null
+      amount?: null,
+      endedAt?: null
     ): AuctionEndedEventFilter;
 
     "AuctionUpdated(uint256,uint256)"(

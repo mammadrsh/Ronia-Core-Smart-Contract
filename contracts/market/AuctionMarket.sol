@@ -6,17 +6,21 @@ import {BaseMarket} from "./BaseMarket.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC721, IERC165} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title Ronia Auction Market Protocol contract
  */
 abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
+    using SafeMath for uint256;
     using Counters for Counters.Counter;
 
     // To check with ERC165 if a token contract is ERC-721 standard
     bytes4 constant interfaceId = 0x80ac58cd; // ERC-721 interface id
-    uint128 public extentionWindow = 15 minutes;
+    uint128 public extentionWindow = 15 minutes; // 15 minutes
     Counters.Counter private auctionIdCounter;
+    /// @notice Min bid increment percentage
+    uint128 public minBidIncrementPercentage = 5_00000; // 5%;
 
     // A mapping of all of the auctions currently running.
     mapping(uint256 => IAuctionMarket.Auction) public auctions;
@@ -108,12 +112,15 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         );
         require(block.timestamp < auction.endTime, "Auction expired");
         require(
-            _amount >= auction.bid,
-            "Your bid must be greater than higgest bid amount"
-        );
-        require(
             _amount >= auction.reservePrice,
             "Must send at least reservePrice"
+        );
+        require(
+            _amount >=
+                auction.bid.add(
+                    auction.bid.mul(minBidIncrementPercentage).div(modulo)
+                ),
+            "Must send more than last bid by minBidIncrementPercentage amount"
         );
 
         // Approve funds for Market access
@@ -129,19 +136,10 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             extended = true;
         }
 
-        emit AuctionBided(
-            _id,
-            msg.sender,
-            _amount,
-            extended
-        );
+        emit AuctionBidded(_id, msg.sender, _amount, extended);
 
         if (extended) {
-            emit AuctionDurationExtended(
-                _id,
-                auction.endTime,
-                extentionWindow
-            );
+            emit AuctionDurationExtended(_id, auction.endTime, extentionWindow);
         }
     }
 
@@ -158,10 +156,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
     {
         Auction storage auction = auctions[_id];
         require(msg.sender == auction.seller, "Must be auction creator");
-        require(
-            auction.startTime > block.timestamp,
-            "Auction has already started"
-        );
+        require(auction.bid == 0, "Auction has a bidder");
 
         auction.reservePrice = _reservePrice;
 
@@ -197,7 +192,11 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         nonReentrant
     {
         Auction storage auction = auctions[_id];
-        require(auction.endTime > block.timestamp, "Auction hasn't completed");
+        require(auction.endTime < block.timestamp, "Auction hasn't completed");
+        require(
+            auction.bid > 0,
+            "Auction has no bidder, you can cancel the Auction."
+        );
 
         address winner = auction.bidder;
         address seller = auction.seller;
@@ -217,15 +216,20 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         // );
 
         // Pay the seller and Ronia servicefee
-        _fundPay(payable(winner), payable(seller), auction.bid, auction.auctionCurrency);
+        _fundPay(
+            payable(winner),
+            payable(seller),
+            auction.bid,
+            auction.auctionCurrency
+        );
 
         delete auctions[_id];
 
-        emit AuctionEnded(_id, winner, winningBid);
+        emit AuctionEnded(_id, winner, winningBid, block.timestamp);
     }
 
     function _cancelAuction(uint256 _id) internal {
-        emit AuctionCanceled(_id);
+        emit AuctionCanceled(_id, block.timestamp);
 
         delete auctions[_id];
     }

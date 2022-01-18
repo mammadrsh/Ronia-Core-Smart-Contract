@@ -20,19 +20,22 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface WETHInterface extends utils.Interface {
   functions: {
+    "_decimals()": FunctionFragment;
+    "_name()": FunctionFragment;
+    "_symbol()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "decimals()": FunctionFragment;
     "deposit()": FunctionFragment;
-    "name()": FunctionFragment;
-    "symbol()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "_decimals", values?: undefined): string;
+  encodeFunctionData(functionFragment: "_name", values?: undefined): string;
+  encodeFunctionData(functionFragment: "_symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "allowance",
     values: [string, string]
@@ -42,10 +45,7 @@ export interface WETHInterface extends utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
@@ -63,13 +63,13 @@ export interface WETHInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "_decimals", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "_name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "_symbol", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -96,7 +96,7 @@ export interface WETHInterface extends utils.Interface {
 
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber],
-  { src: string; guy: string; wad: BigNumber }
+  { owner: string; spender: string; value: BigNumber }
 >;
 
 export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
@@ -110,7 +110,7 @@ export type DepositEventFilter = TypedEventFilter<DepositEvent>;
 
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber],
-  { src: string; dst: string; wad: BigNumber }
+  { from: string; to: string; value: BigNumber }
 >;
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
@@ -149,42 +149,42 @@ export interface WETH extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    _decimals(overrides?: CallOverrides): Promise<[number]>;
+
+    _name(overrides?: CallOverrides): Promise<[string]>;
+
+    _symbol(overrides?: CallOverrides): Promise<[string]>;
+
     allowance(
-      arg0: string,
-      arg1: string,
+      owner: string,
+      spender: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     approve(
-      guy: string,
-      wad: BigNumberish,
+      spender: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    balanceOf(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    decimals(overrides?: CallOverrides): Promise<[number]>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     deposit(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    symbol(overrides?: CallOverrides): Promise<[string]>;
-
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transfer(
-      dst: string,
-      wad: BigNumberish,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     transferFrom(
-      src: string,
-      dst: string,
-      wad: BigNumberish,
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -194,42 +194,42 @@ export interface WETH extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  _decimals(overrides?: CallOverrides): Promise<number>;
+
+  _name(overrides?: CallOverrides): Promise<string>;
+
+  _symbol(overrides?: CallOverrides): Promise<string>;
+
   allowance(
-    arg0: string,
-    arg1: string,
+    owner: string,
+    spender: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   approve(
-    guy: string,
-    wad: BigNumberish,
+    spender: string,
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  decimals(overrides?: CallOverrides): Promise<number>;
+  balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   deposit(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  name(overrides?: CallOverrides): Promise<string>;
-
-  symbol(overrides?: CallOverrides): Promise<string>;
-
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transfer(
-    dst: string,
-    wad: BigNumberish,
+    recipient: string,
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   transferFrom(
-    src: string,
-    dst: string,
-    wad: BigNumberish,
+    sender: string,
+    recipient: string,
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -239,40 +239,40 @@ export interface WETH extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    _decimals(overrides?: CallOverrides): Promise<number>;
+
+    _name(overrides?: CallOverrides): Promise<string>;
+
+    _symbol(overrides?: CallOverrides): Promise<string>;
+
     allowance(
-      arg0: string,
-      arg1: string,
+      owner: string,
+      spender: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     approve(
-      guy: string,
-      wad: BigNumberish,
+      spender: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    decimals(overrides?: CallOverrides): Promise<number>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit(overrides?: CallOverrides): Promise<void>;
-
-    name(overrides?: CallOverrides): Promise<string>;
-
-    symbol(overrides?: CallOverrides): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
-      dst: string,
-      wad: BigNumberish,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     transferFrom(
-      src: string,
-      dst: string,
-      wad: BigNumberish,
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -281,14 +281,14 @@ export interface WETH extends BaseContract {
 
   filters: {
     "Approval(address,address,uint256)"(
-      src?: string | null,
-      guy?: string | null,
-      wad?: null
+      owner?: string | null,
+      spender?: string | null,
+      value?: null
     ): ApprovalEventFilter;
     Approval(
-      src?: string | null,
-      guy?: string | null,
-      wad?: null
+      owner?: string | null,
+      spender?: string | null,
+      value?: null
     ): ApprovalEventFilter;
 
     "Deposit(address,uint256)"(
@@ -298,14 +298,14 @@ export interface WETH extends BaseContract {
     Deposit(dst?: string | null, wad?: null): DepositEventFilter;
 
     "Transfer(address,address,uint256)"(
-      src?: string | null,
-      dst?: string | null,
-      wad?: null
+      from?: string | null,
+      to?: string | null,
+      value?: null
     ): TransferEventFilter;
     Transfer(
-      src?: string | null,
-      dst?: string | null,
-      wad?: null
+      from?: string | null,
+      to?: string | null,
+      value?: null
     ): TransferEventFilter;
 
     "Withdrawal(address,uint256)"(
@@ -316,42 +316,42 @@ export interface WETH extends BaseContract {
   };
 
   estimateGas: {
+    _decimals(overrides?: CallOverrides): Promise<BigNumber>;
+
+    _name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    _symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
     allowance(
-      arg0: string,
-      arg1: string,
+      owner: string,
+      spender: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     approve(
-      guy: string,
-      wad: BigNumberish,
+      spender: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    decimals(overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
-      dst: string,
-      wad: BigNumberish,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     transferFrom(
-      src: string,
-      dst: string,
-      wad: BigNumberish,
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -362,45 +362,45 @@ export interface WETH extends BaseContract {
   };
 
   populateTransaction: {
+    _decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    _name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    _symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     allowance(
-      arg0: string,
-      arg1: string,
+      owner: string,
+      spender: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     approve(
-      guy: string,
-      wad: BigNumberish,
+      spender: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
-      arg0: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     deposit(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transfer(
-      dst: string,
-      wad: BigNumberish,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
-      src: string,
-      dst: string,
-      wad: BigNumberish,
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

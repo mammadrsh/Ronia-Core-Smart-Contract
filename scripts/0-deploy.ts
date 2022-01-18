@@ -5,8 +5,6 @@ const { deployWETH } = require("../test/utils");
 
 
 async function main() {
-    let weth: Contract;
-    weth = await deployWETH();
     let accounts = await ethers.getSigners();
     //deploy roniaMarket
     const RoniaMarket = await ethers.getContractFactory("RoniaMarket");
