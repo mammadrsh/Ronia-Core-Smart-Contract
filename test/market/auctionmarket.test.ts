@@ -157,7 +157,16 @@ describe("RoniaMarket", () => {
         roniaMarket.placeBid(0, 0)
       ).eventually.rejectedWith(`Must send at least reservePrice`);
     });
+
+    it("should revert if amount not approved for market", async () => {
+      await expect(
+        roniaMarket.placeBid(0, toEther("1"))
+      ).eventually.rejectedWith(`Bidder Should approve market for bid amount`);
+    });
     describe("first bid", () => {
+      beforeEach(async () => {
+        await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
+      });
       it("should not update the auction's endtime", async () => {
         const beforeEndTime = (await roniaMarket.auctions(0)).endTime;
         await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
@@ -175,17 +184,14 @@ describe("RoniaMarket", () => {
       it("should approve funds for market", async () => {
         const bid = toEther("1");
         await roniaMarket.connect(bidderA).placeBid(0, bid);
-        // await weth.connect(bidderA).approve(await marketAccount.getAddress(), toEther("1"));
+        // await weth.connect(bidderA).approve(await roniaMarket.address, bid);
         const currentAuction = await roniaMarket.auctions(0);
         const approveScale = await (await roniaMarket.approveScale()).toNumber();
         const modulo = await (await roniaMarket.modulo()).toNumber();
-        console.log(approveScale / modulo);
-        const allowance = await (await weth.allowance(await bidderA.getAddress(), await marketAccount.getAddress())).toNumber();
+        const allowance = await (await weth.allowance(await bidderA.getAddress(), await roniaMarket.address));
         const shouldApprove = bid * (approveScale / modulo);
-        console.log(allowance);
-        console.log(shouldApprove);
-        
-        // expect(allowance).to.eq(shouldApprove);
+
+        expect(ethers.utils.formatEther(allowance.toString())).to.eq(ethers.utils.formatEther(bid.toString()));
       });
       it("should emit an AuctionBided event", async () => {
         const block = await ethers.provider.getBlockNumber();
@@ -213,6 +219,7 @@ describe("RoniaMarket", () => {
     describe("second bid", () => {
       beforeEach(async () => {
         roniaMarket = roniaMarket.connect(bidderB) as RoniaMarket;
+        await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
         await roniaMarket
           .connect(bidderA)
           .placeBid(0, toEther("1"));
@@ -226,6 +233,7 @@ describe("RoniaMarket", () => {
           );
       });
       it("should update the stored bid information", async () => {
+        await weth.connect(bidderB).approve(await roniaMarket.address, toEther("2"));
         await roniaMarket.placeBid(0, toEther("2"));
 
         const currAuction = await roniaMarket.auctions(0);
@@ -235,12 +243,14 @@ describe("RoniaMarket", () => {
       });
       it("should not extend the duration of the bid if outside of the time buffer", async () => {
         const beforeEndTime = (await roniaMarket.auctions(0)).endTime;
+        await weth.connect(bidderB).approve(await roniaMarket.address, toEther("2"));
         await roniaMarket.placeBid(0, toEther("2"));
         const afterEndTime = (await roniaMarket.auctions(0)).endTime;
         expect(beforeEndTime).to.eq(afterEndTime);
       });
       it("should emit an AuctionBidded event", async () => {
         const block = await ethers.provider.getBlockNumber();
+        await weth.connect(bidderB).approve(await roniaMarket.address, toEther("2"));
         await roniaMarket.placeBid(0, toEther("2"));
         const events = await roniaMarket.queryFilter(
           roniaMarket.filters.AuctionBidded(
@@ -264,6 +274,7 @@ describe("RoniaMarket", () => {
     describe("last minute bid", () => {
       beforeEach(async () => {
         const currentAuction = await roniaMarket.auctions(0);
+        await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           currentAuction.endTime
             .sub(1)
@@ -283,6 +294,7 @@ describe("RoniaMarket", () => {
     describe("late bid", () => {
       beforeEach(async () => {
         const currAuction = await roniaMarket.auctions(0);
+        await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           currAuction.endTime
             .add(10)
@@ -323,6 +335,7 @@ describe("RoniaMarket", () => {
     });
     it('Should revert if auction has a bidder', async () => {
       const block = await (await ethers.provider.getBlock(ethers.provider.getBlockNumber())).timestamp;
+      await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
       await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
       await expect(roniaMarket.connect(curator).updateAuction(0, toEther("0.2"))).eventually.rejectedWith('Auction has a bidder')
     });
@@ -362,6 +375,7 @@ describe("RoniaMarket", () => {
       );
     });
     it("should not have a bidder", async () => {
+      await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
       await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
       await expect(
         roniaMarket.connect(curator).cancelAuction(0)
@@ -453,16 +467,32 @@ describe("RoniaMarket", () => {
       const endTime = Math.floor(startTime + (60 * 60 * 24 * 8));
       const reservePrice = toEther("0.1");
       await roniaMarket.connect(curator).createAuction(tokenId, ronia721.address, startTime, endTime, reservePrice, wethAddress);
+      await weth.connect(bidderA).approve(await roniaMarket.address, toEther("1"));
       await roniaMarket.connect(bidderA).placeBid(0, toEther("1"));
       await ethers.provider.send("evm_setNextBlockTimestamp", [
         endTime + 10,
       ]);
     });
 
-    it("should transfer the NFT to the winning bidder", async () => {
+    it("should transfer the NFT to the winning bidder && Transfer fee to market && Transfer rest to seller", async () => {
+      const beforCuratorBalance = ethers.utils.formatEther(await weth.balanceOf(await curator.getAddress()));
+
       await roniaMarket.endAuction(0);
 
-      expect(await ronia721.ownerOf(0)).to.eq(await bidderA.getAddress());
+      expect(await ronia721.ownerOf(1)).to.eq(await bidderA.getAddress());
+
+      const feePercentage = await (await roniaMarket.serviceFee()).toNumber();
+      const modulo = await (await roniaMarket.modulo()).toNumber();
+      const marketAccountBalance = await weth.balanceOf(await marketAccount.getAddress());
+      const expectedFee = (feePercentage / modulo) * toEther("1");
+
+      expect(ethers.utils.formatEther(expectedFee.toString())).to.eq(ethers.utils.formatEther(marketAccountBalance.toString()));
+
+      const afterCuratorBalance = ethers.utils.formatEther(await weth.balanceOf(await curator.getAddress()));
+      
+      const expectedCuratorBalance = parseFloat(afterCuratorBalance) - parseFloat(beforCuratorBalance);
+      const expectedAmount = toEther("1") - ((feePercentage / modulo) * toEther("1"));
+      expect(ethers.utils.formatEther(expectedAmount.toString())).to.eq(expectedCuratorBalance.toFixed(3));
     });
   });
 });

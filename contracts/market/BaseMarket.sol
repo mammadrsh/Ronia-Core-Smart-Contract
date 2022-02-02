@@ -12,7 +12,7 @@ abstract contract BaseMarket is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @notice Ronia commission on every sale
-    uint256 public serviceFee = 2_00000; // 2.50000%
+    uint256 public serviceFee = 2_50000; // 2.50000%
     /// @notice Approve amount scale
     uint256 public approveScale = 5_00000; // 5.00000%
     /// @notice precision 100.00000%

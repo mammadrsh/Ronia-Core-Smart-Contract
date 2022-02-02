@@ -7,6 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IERC721, IERC165} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Ronia Auction Market Protocol contract
@@ -55,6 +56,12 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             IERC165(_tokenContract).supportsInterface(interfaceId),
             "tokenContract does not support ERC721 interface"
         );
+        //         IERC721(auction.tokenContract).safeTransferFrom(
+        //     seller,
+        //     winner,
+        //     auction.tokenId
+        // );
+        // // require(IERC721(auction.tokenContract).)
 
         address tokenOwner = IERC721(_tokenContract).ownerOf(_tokenId);
         require(msg.sender == tokenOwner, "Caller must be owner for token id");
@@ -122,6 +129,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
                 ),
             "Must send more than last bid by minBidIncrementPercentage amount"
         );
+        require(IERC20(auction.auctionCurrency).allowance(msg.sender, address(this)) >= _amount, "Bidder Should approve market for bid amount");
 
         // Approve funds for Market access
         _approveFunds(_amount, auction.auctionCurrency);
