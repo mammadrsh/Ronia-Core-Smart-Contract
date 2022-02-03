@@ -6,10 +6,13 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IERC721, IERC165} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 abstract contract BaseMarket is ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+    bytes4 constant interfaceId = 0x80ac58cd; // ERC-721 interface id
 
     /// @notice Ronia commission on every sale
     uint256 public serviceFee = 2_50000; // 2.50000%
@@ -18,13 +21,26 @@ abstract contract BaseMarket is ReentrancyGuard {
     /// @notice precision 100.00000%
     uint256 public modulo = 100_00000; // 100.00000%
 
-
     address public roniaAddress;
     // @notice platform funds collector
     address payable public platformAccount;
 
     constructor(address payable _platformAccount) {
         platformAccount = _platformAccount;
+    }
+
+    modifier _isERC721(address _tokenContract) {
+        require(
+            IERC165(_tokenContract).supportsInterface(interfaceId),
+            "tokenContract does not support ERC721 interface"
+        );
+        _;
+    }
+
+    modifier _isERC721Owner(address _tokenContract, uint256 _tokenId) {
+        address tokenOwner = IERC721(_tokenContract).ownerOf(_tokenId);
+        require(msg.sender == tokenOwner, "Caller must be owner for token id");
+        _;
     }
 
     function getPlatformAccount() public view returns (address payable) {

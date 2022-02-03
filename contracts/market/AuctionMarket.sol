@@ -17,7 +17,6 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
     using Counters for Counters.Counter;
 
     // To check with ERC165 if a token contract is ERC-721 standard
-    bytes4 constant interfaceId = 0x80ac58cd; // ERC-721 interface id
     uint128 public extentionWindow = 15 minutes; // 15 minutes
     Counters.Counter private auctionIdCounter;
     /// @notice Min bid increment percentage
@@ -47,15 +46,7 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         uint256 _endTime,
         uint256 _reservePrice,
         address _auctionCurrency
-    ) public override nonReentrant returns (uint256) {
-        require(
-            IERC165(_tokenContract).supportsInterface(interfaceId),
-            "tokenContract does not support ERC721 interface"
-        );
-        require(
-            IERC165(_tokenContract).supportsInterface(interfaceId),
-            "tokenContract does not support ERC721 interface"
-        );
+    ) public override _isERC721(_tokenContract) _isERC721Owner(_tokenContract, _tokenId) nonReentrant returns (uint256) {
         //         IERC721(auction.tokenContract).safeTransferFrom(
         //     seller,
         //     winner,
@@ -64,7 +55,6 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
         // // require(IERC721(auction.tokenContract).)
 
         address tokenOwner = IERC721(_tokenContract).ownerOf(_tokenId);
-        require(msg.sender == tokenOwner, "Caller must be owner for token id");
         uint256 auctionId = auctionIdCounter.current();
 
         auctions[auctionId] = Auction({
@@ -78,8 +68,6 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
             reservePrice: _reservePrice,
             auctionCurrency: _auctionCurrency
         });
-
-        IERC721(_tokenContract).approve(address(this), _tokenId);
 
         auctionIdCounter.increment();
 
@@ -129,10 +117,16 @@ abstract contract AuctionMarket is IAuctionMarket, BaseMarket {
                 ),
             "Must send more than last bid by minBidIncrementPercentage amount"
         );
-        require(IERC20(auction.auctionCurrency).allowance(msg.sender, address(this)) >= _amount, "Bidder Should approve market for bid amount");
+        require(
+            IERC20(auction.auctionCurrency).allowance(
+                msg.sender,
+                address(this)
+            ) >= _amount,
+            "Bidder Should approve market for bid amount"
+        );
 
         // Approve funds for Market access
-        _approveFunds(_amount, auction.auctionCurrency);
+        // _approveFunds(_amount, auction.auctionCurrency);
 
         auction.bid = _amount;
         auction.bidder = payable(msg.sender);

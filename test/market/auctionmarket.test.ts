@@ -3,9 +3,7 @@ import asPromised from "chai-as-promised";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { RoniaMarket, Ronia721, WETH } from "../../typechain-types";
-import { formatUnits } from "ethers/lib/utils";
 import { BigNumber, Contract, Signer } from "ethers";
-import { Address } from "ethereumjs-util";
 const { deployWETH, deployRonia721, toEther } = require("../utils");
 
 chai.use(asPromised);
@@ -384,7 +382,7 @@ describe("RoniaMarket", () => {
       );
     });
 
-    it("should be callable by the creator", async () => {
+    it("should cancel Auction", async () => {
       await roniaMarket.connect(curator).cancelAuction(0);
 
       const auctionResult = await roniaMarket.auctions(0);
@@ -489,7 +487,7 @@ describe("RoniaMarket", () => {
       expect(ethers.utils.formatEther(expectedFee.toString())).to.eq(ethers.utils.formatEther(marketAccountBalance.toString()));
 
       const afterCuratorBalance = ethers.utils.formatEther(await weth.balanceOf(await curator.getAddress()));
-      
+
       const expectedCuratorBalance = parseFloat(afterCuratorBalance) - parseFloat(beforCuratorBalance);
       const expectedAmount = toEther("1") - ((feePercentage / modulo) * toEther("1"));
       expect(ethers.utils.formatEther(expectedAmount.toString())).to.eq(expectedCuratorBalance.toFixed(3));
