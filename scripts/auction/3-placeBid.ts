@@ -1,8 +1,8 @@
 
 import { ethers } from "hardhat";
-import RoniaMarket from '../artifacts/contracts/market/RoniaMarket.sol/RoniaMarket.json';
-import WETH from '../artifacts/contracts/other/weth.sol/WETH.json';
-import { toEther } from "../test/utils";
+import RoniaMarket from '../../artifacts/contracts/market/RoniaMarket.sol/RoniaMarket.json';
+import WETH from '../../artifacts/contracts/other/weth.sol/WETH.json';
+import { toEther } from "../../test/utils";
 
 
 
