@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import RoniaMarket from '../artifacts/contracts/market/RoniaMarket.sol/RoniaMarket.json';
+import RoniaMarket from '../../artifacts/contracts/market/RoniaMarket.sol/RoniaMarket.json';
 
 
 async function main() {
